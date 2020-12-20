@@ -107,17 +107,14 @@ BinomialDistributionClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         # Calculation of the distribution density
         Density <- dbinom(x, DP1, DP2)
         if(DistributionFunction=="TRUE"){ 
-          # Calculation of the quantile
-          DistributionResult1 <- pbinom(XValue, DP1, DP2)
-          if(DistributionFunctionType=="interval"|DistributionFunctionType=="higher"){
-            DistributionResult1 <- pbinom(XValue-1, DP1, DP2)}
-          # The quantile is saved as another variable
-          DistributionResult <- DistributionResult1
+          # Calculation of the probability P(X <= x1)
+          DistributionResult <- pbinom(XValue, DP1, DP2)
+          if(DistributionFunctionType=="higher"){
+            # P(X >= x1) = 1 - P(X < x1) = 1 - (P(X <= x1) - P(X = x1)) = 1 - P(X <= x1) + P(X = x1)
+            DistributionResult <- 1 - pbinom(XValue, DP1, DP2) + dbinom(XValue, DP1, DP2)}
           if(DistributionFunctionType == "interval"){
-            # In case of two x-values, the second quantile is calculated too
-            DistributionResult2 <- pbinom(XValue2, DP1, DP2)
-            # The result is the difference between the two quantiles
-            DistributionResult <- DistributionResult2-DistributionResult1}}
+            # The result is the difference between the two quantiles P(x1 <= X <= x2) = P(X <= x2) - P(X <= x1) + P(X = x1)
+            DistributionResult <- pbinom(XValue2, DP1, DP2) - pbinom(XValue, DP1, DP2) + dbinom(XValue, DP1, DP2)}}
         if(QuantileFunction=="TRUE"){
           if (QuantileFunctionType=="cumulative"){
             # The x-value of the percentil is calculated
@@ -136,8 +133,6 @@ BinomialDistributionClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         OutputLabel22 <- ""
         # ... and filled by conditions. 
         if(DistributionFunction=="TRUE"){
-          if(DistributionFunctionType=="higher"){
-            DistributionResult <- 1-DistributionResult}
           if(DistributionFunctionType=="is"){
             DistributionResult <- dbinom(XValue, DP1, DP2)}
           DistributionResult <- round(DistributionResult, digits = 3)
